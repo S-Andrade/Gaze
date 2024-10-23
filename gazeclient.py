@@ -34,6 +34,10 @@ def main():
         logger.log_info("Initialize MediaPipe Pose...")
         mp_pose = mp.solutions.pose
         pose = mp_pose.Pose()
+
+        # Initialize drawing utility
+        mp_drawing = mp.solutions.drawing_utils
+
         logger.log_info("Initialize MediaPipe Pose.")
     except Exception as e:
             logger.log_exception("An unexpected error occurred while Initialize MediaPipe Pose", e)
@@ -72,7 +76,8 @@ def main():
         
         if results.pose_landmarks:
                         
-            
+            mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+
             # Get shoulder landmarks
             landmarks = results.pose_landmarks.landmark
             landmarks = landmarks[:13]
@@ -91,6 +96,7 @@ def main():
             if socket:
                 sGaze.send(poly_pred[0].encode())
         
+        cv2.imshow('Body Tracking', frame)
         # Break the loop with 'q'
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

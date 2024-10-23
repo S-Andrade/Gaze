@@ -10,7 +10,7 @@ pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
 
 # Start video capture
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(2)
 
 while True:
     ret, frame = cap.read()
@@ -40,7 +40,6 @@ while True:
             temp += [l.x, l.y, l.z]
             
         
-
 
 
         
