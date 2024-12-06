@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 def main(participant,filename):
     mp_pose = mp.solutions.pose
     pose_mp = mp_pose.Pose()
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
         
 
     getlabel = {"Left":0, "Right":0, "Down":0, "Front":0}

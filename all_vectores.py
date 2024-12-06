@@ -39,8 +39,7 @@ while True:
         for l in landmarks:
             temp += [l.x, l.y, l.z]
             
-        
-
+    
 
         
     # Show the frame

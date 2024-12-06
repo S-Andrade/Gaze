@@ -21,7 +21,7 @@ def getData():
     pose = ""
     X = []
     y = []
-    l = ["./data/2"]
+    l = ["./data/3", "./data/2"]
     #l = [".\\data\\train"]
     for ls in l:
         os.chdir(ls)    
@@ -73,7 +73,7 @@ def run(poly,rbf):
     mp_drawing = mp.solutions.drawing_utils
 
     # Start video capture
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
 
     while True:
         ret, frame = cap.read()

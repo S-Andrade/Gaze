@@ -1,4 +1,3 @@
-
 import socket           
 import sys
 import joblib
@@ -12,13 +11,15 @@ warnings.filterwarnings('ignore')
 
 def main():
     logger = init_logger(str(sys.argv[1]), f"gaze_{str(sys.argv[1])}.log") 
-    socket = False
-    if sys.argv[1] == "--socket":
-        socket = True
+    send_socket = False
+ 
+    if len(sys.argv) > 2 and sys.argv[2] == "--socket":
+        print("socket")
+        send_socket = True
         try:
             logger.log_info("Connecting to DecisionMaker...")
             sGaze = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         
-            sGaze.connect(('127.0.0.1', 50002))
+            sGaze.connect(('127.0.0.1', 50009))
             logger.log_info("Connected to DecisionMaker.")
         except ConnectionRefusedError:
             logger.log_error("Connectionto DecisionMaker Refused.")
@@ -45,7 +46,7 @@ def main():
     
     try:
         logger.log_info("Start video capture...")
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(2)
         logger.log_info("Start video capture.")
     except Exception as e:
         logger.log_error("An unexpected error occurred while Start video capture", e)
@@ -93,7 +94,7 @@ def main():
             print(poly_pred[0].encode())
             logger.log_message("Current gaze target", poly_pred[0])
             logger.log_message("vector",str(temp) )
-            if socket:
+            if send_socket:
                 sGaze.send(poly_pred[0].encode())
         
         cv2.imshow('Body Tracking', frame)
