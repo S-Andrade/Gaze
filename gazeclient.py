@@ -19,7 +19,7 @@ def main():
         try:
             logger.log_info("Connecting to DecisionMaker...")
             sGaze = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         
-            sGaze.connect(('127.0.0.1', 50009))
+            sGaze.connect(('192.168.0.102', 50009))
             logger.log_info("Connected to DecisionMaker.")
         except ConnectionRefusedError:
             logger.log_error("Connectionto DecisionMaker Refused.")
