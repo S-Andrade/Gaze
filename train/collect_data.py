@@ -7,61 +7,93 @@ import random
 import numpy as np
 import cv2
 import mediapipe as mp
+import threading
+import serial
 import warnings
 warnings.filterwarnings('ignore')
-     
+
+
+#robot_ip = "192.168.0.103"
+#robot = ElmoV2API(robot_ip, debug=False)
+#robot.enable_behavior(name="look_around", control = False)
+#robot.set_pan(0)
+#robot.set_tilt(-10)
+#robot.set_pan_torque(True)
+#robot.set_tilt_torque(True)
+#robot.update_leds_icon("nothing.png")
+#robot.set_screen("simple-blink-green.gif")
+
+#arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.1)
+
+global tag
+tag = False    
+
+def human():
+    global tag
+    time.sleep(10)
+    tag = True
+
+def robot(angle):
+    global tag
+    #arduino.write(f'{angle}\n'.encode())
+    #robot.set_screen("simple-listening-yellow.gif")
+    time.sleep(5)
+    #robot.set_screen("simple-blink-green.gif")
+    playsound("elmo.mp3")
+    #arduino.write(f'90\n'.encode())
+    tag = True
+
+def card():
+    global tag
+    time.sleep(10)
+    tag = True
+
+
 def main(participant,filename):
+    global tag
     mp_pose = mp.solutions.pose
     pose_mp = mp_pose.Pose()
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture(0)
         
 
-    getlabel = {"Left":0, "Right":0, "Down":0, "Front":0}
-    data = {"Left":[], "Right":[], "Down":[], "Front":[]}
+    getlabel = {"Left":0, "Right":0, "Center":0}
+    data = {"Left":[], "Right":[], "Center":[]}
 
+    gettarget = {}
+    angle = 90
     
     if participant == "2":
-        gettarget = {"Left":{"SHREK":0}, "Right":{"ROBOT":0}, "Down":{"PINK CUBE":0, "BLUE CUBE":0,"YELLOW CUBE":0,"PURPLE CUBE":0, "previous": ""}, "Front":{"RED CUBE":0, "GREEN CUBE":0,"ORANGE CUBE":0,"WHITE CUBE":0, "previous": ""}}
-
+        gettarget = {"Left":"HUMAN", "Right":"ROBOT", "Center":"CARD"}
+        angle = 0
     
     if participant == "3":
-        gettarget = {"Left":{"ROBOT":0}, "Right":{"SHREK":0}, "Down":{"PINK CUBE":0, "BLUE CUBE":0,"YELLOW CUBE":0,"PURPLE CUBE":0, "previous": ""}, "Front":{"RED CUBE":0, "GREEN CUBE":0,"ORANGE CUBE":0,"WHITE CUBE":0, "previous": ""}}
+        gettarget = {"Left":"ROBOT", "Right":"HUMAN", "Center":"CARD"}
+        angle = 90
 
-    end = True
-    previous_target = ""
-    i = 0
-    while end:
-        poses = [label for label, value in getlabel.items() if value < 8 and label != previous_target]
+    while True:
+        poses = [label for label, value in getlabel.items() if value < 1]
+        if len(poses) == 0:
+            break
+
         pose = random.choice(poses)
         getlabel[pose] += 1
-        if pose == "Left" or pose == "Right":
-            targets = dict(gettarget[pose])
-            targets = list(targets.keys())
-            target = targets[0]
-            previous_target = pose
-            gettarget[pose][target] += 1
-            
+
+        target = gettarget[pose]
+        tag = False
+        if target == "HUMAN":
+            playsound("ask_human.mp3")
+            threading.Thread(target = human).start()
+        if target == "ROBOT":
+            playsound("ask_robot.mp3")
+            threading.Thread(target = robot, args=(angle,)).start()
+        if target == "CARD":
+            playsound("read_text.mp3")
+            threading.Thread(target = card).start()
         
-        if pose == "Front" or pose == "Down":
-            targets = [target for target,value in gettarget[pose].items() if target != "previous" and target != gettarget[pose]["previous"] and value < 2]
-            if len(targets) == 0:
-                targets = [target for target,value in gettarget[pose].items() if target != "previous" and value < 2]
-            target = random.choice(targets)
-            gettarget[pose][target] += 1
-            gettarget[pose]["previous"] = target
-
-        print(pose + " > " + target)
-        print(gettarget)
-        print(getlabel)
-        i+=1      
-
-        file = target.replace(" ", "") + ".mp3"
-
-        playsound(file)
-        
+        start = time.time()
         data_pose = []
         j = 0
-        while j < 100:
+        while j < 250:
             ret, frame = cap.read()
             if not ret:
                 break
@@ -83,20 +115,18 @@ def main(participant,filename):
                     temp += [l.x, l.y, l.z]
 
                 data_pose.append(temp)
-                print(j)
+                #print(j)
                 j += 1
 
         data[pose] += data_pose
-        i+=1
+        print(time.time() - start)
         
-        if sum(getlabel.values()) == 32:
-             end = False
-
+        if tag:
+            playsound("bip.mp3")
+            
+    playsound("bip.mp3")     
     p = [(p, len(v)) for p,v in data.items()]
     print(p)
-
-    playsound("bip.mp3")
-        
             
     filename = "data/" + participant + "/" + filename + ".tsv"
     with open(filename, 'w', encoding='utf8', newline='') as tsv_file:
@@ -105,7 +135,6 @@ def main(participant,filename):
                       tsv_writer.writerow([pose])
                       for line in data[pose]:
                             tsv_writer.writerow(line)
-
 
 if __name__ == '__main__':
     main(sys.argv[1],sys.argv[2])

@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import mediapipe as mp
+import time
 
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -10,9 +11,17 @@ pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
 
 # Start video capture
-cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture(0)
+
+start = time.time()
+
+fra = 0
 
 while True:
+
+    if time.time() - start >= 10:
+        break
+
     ret, frame = cap.read()
     if not ret:
         break
@@ -27,27 +36,24 @@ while True:
         # Draw the pose landmarks on the frame
         mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
-        
-        
         # Get shoulder landmarks
         landmarks = results.pose_landmarks.landmark
         landmarks = landmarks[:13]
 
         i =0
-
         temp = []
         for l in landmarks:
             temp += [l.x, l.y, l.z]
-            
-    
-
-        
     # Show the frame
     cv2.imshow('Body Tracking', frame)
     
     # Break the loop with 'q'
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
+    fra +=1
+
+print("frames> " + str(fra))
 
 # Release the capture and close windows
 cap.release()
