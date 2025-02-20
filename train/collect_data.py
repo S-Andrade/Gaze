@@ -33,14 +33,15 @@ def human():
     time.sleep(10)
     tag = True
 
-def robot(angle):
+def robot(sound_file):
     global tag
-    #arduino.write(f'{angle}\n'.encode())
-    #robot.set_screen("simple-listening-yellow.gif")
+   
     time.sleep(5)
-    #robot.set_screen("simple-blink-green.gif")
-    playsound("elmo.mp3")
-    #arduino.write(f'90\n'.encode())
+   
+    if sound_file == "ask_robot1.mp3":
+        playsound("elmo.mp3")
+    if sound_file == "ask_robot2.mp3":
+        playsound("sun.mp3")
     tag = True
 
 def card():
@@ -70,8 +71,11 @@ def main(participant,filename):
         gettarget = {"Left":"ROBOT", "Right":"HUMAN", "Center":"CARD"}
         angle = 90
 
+    ask_human = ["ask_human1.mp3", "ask_human2.mp3"]
+    ask_robot = ["ask_robot1.mp3", "ask_robot2.mp3"]
+
     while True:
-        poses = [label for label, value in getlabel.items() if value < 1]
+        poses = [label for label, value in getlabel.items() if value < 2]
         if len(poses) == 0:
             break
 
@@ -81,11 +85,15 @@ def main(participant,filename):
         target = gettarget[pose]
         tag = False
         if target == "HUMAN":
-            playsound("ask_human.mp3")
+            sound_file = random.choice(ask_human)
+            ask_human.remove(sound_file)
+            playsound(sound_file)
             threading.Thread(target = human).start()
         if target == "ROBOT":
-            playsound("ask_robot.mp3")
-            threading.Thread(target = robot, args=(angle,)).start()
+            sound_file = random.choice(ask_robot)
+            ask_robot.remove(sound_file)
+            playsound(sound_file)
+            threading.Thread(target = robot, args=(sound_file,)).start()
         if target == "CARD":
             playsound("read_text.mp3")
             threading.Thread(target = card).start()
@@ -93,7 +101,7 @@ def main(participant,filename):
         start = time.time()
         data_pose = []
         j = 0
-        while j < 250:
+        while j < 125:
             ret, frame = cap.read()
             if not ret:
                 break
@@ -115,7 +123,7 @@ def main(participant,filename):
                     temp += [l.x, l.y, l.z]
 
                 data_pose.append(temp)
-                #print(j)
+                print(j)
                 j += 1
 
         data[pose] += data_pose
