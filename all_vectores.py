@@ -11,7 +11,7 @@ pose = mp_pose.Pose()
 mp_drawing = mp.solutions.drawing_utils
 
 # Start video capture
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(2)
 
 start = time.time()
 
@@ -19,7 +19,7 @@ fra = 0
 
 while True:
 
-    if time.time() - start >= 10:
+    if time.time() - start >= 100:
         break
 
     ret, frame = cap.read()
